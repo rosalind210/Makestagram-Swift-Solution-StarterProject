@@ -7,29 +7,94 @@
 //
 
 import UIKit
+import Parse
 
 class TimelineViewController: UIViewController {
-
+    
+    
+    @IBOutlet weak var tableView: UITableView!
+    var photoTakingHelper: PhotoTakingHelper?
+    var posts: [Post] = []
+    
+    let postsQuery = Post.query()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        // Do any additional setup after loading the view.
-    }
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
+        
+        self.tabBarController?.delegate = self
     }
     
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
+    override func viewDidAppear(animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        // 1 create query for follow relationships
+        let followingQuery = PFQuery(className: "Follow")
+        followingQuery.whereKey("fromUser", equalTo:PFUser.currentUser()!)
+        
+        // 2 query of the follower's posts
+        let postsFromFollowedUsers = Post.query()
+        postsFromFollowedUsers!.whereKey("user", matchesKey: "toUser", inQuery: followingQuery)
+        
+        // 3 query for user's posts
+        let postsFromThisUser = Post.query()
+        postsFromThisUser!.whereKey("user", equalTo: PFUser.currentUser()!)
+        
+        // 4 combined for 2 and 3
+        let query = PFQuery.orQueryWithSubqueries([postsFromFollowedUsers!, postsFromThisUser!])
+        // 5 user's query
+        query.includeKey("user") //includeKey tells parse to download user info
+        // 6
+        query.orderByDescending("createdAt")
+        
+        // 7 start network connection
+        query.findObjectsInBackgroundWithBlock {(result: [AnyObject]?, error: NSError?) -> Void in
+            // 8 receive posts that match criteria
+            self.posts = result as? [Post] ?? []
+            // 9 refresh tableview
+            self.tableView.reloadData()
+        }
     }
-    */
+    
+    func takePhoto() {
+        // instantiate photo taking class, provide callback for when photo is selected
+        photoTakingHelper =
+            PhotoTakingHelper(viewController: self.tabBarController!) { (image: UIImage?) in
+                let post = Post()
+                post.image = image
+                post.uploadPost()
+        }
+    }
+    
+}
 
+// MARK: Tab Bar Delegate
+
+extension TimelineViewController: UITabBarControllerDelegate {
+    
+    func tabBarController(tabBarController: UITabBarController, shouldSelectViewController viewController: UIViewController) -> Bool {
+        if (viewController is PhotoViewController) {
+            takePhoto()
+            return false
+        } else {
+            return true
+        }
+    }
+}
+
+extension TimelineViewController: UITableViewDataSource {
+    
+    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        // 1 has as many rows as posts
+        return posts.count
+    }
+    
+    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+        // 2
+        let cell = tableView.dequeueReusableCellWithIdentifier("PostCell") as! UITableViewCell
+        
+        cell.textLabel!.text = "Post"
+        
+        return cell
+    }
+    
 }
