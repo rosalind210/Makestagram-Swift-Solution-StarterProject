@@ -8,11 +8,12 @@
 
 import Foundation
 import Parse
+import Bond
 
 // 1
 class Post : PFObject, PFSubclassing {
     
-    var image: UIImage?
+    var image: Dynamic<UIImage?> = Dynamic(nil)
     
     var photoUploadTask: UIBackgroundTaskIdentifier?
     
@@ -43,7 +44,7 @@ class Post : PFObject, PFSubclassing {
     
     func uploadPost() {
         
-        let imageData = UIImageJPEGRepresentation(image, 0.8)
+        let imageData = UIImageJPEGRepresentation(image.value, 0.8)
         let imageFile = PFFile(data: imageData)
         
         //create background task
@@ -59,6 +60,21 @@ class Post : PFObject, PFSubclassing {
         user = PFUser.currentUser()
         self.imageFile = imageFile
         saveInBackgroundWithBlock(nil)
+    }
+    
+    func downloadImage() {
+        // if image is not downloaded yet, get it
+        // 1
+        if (image.value == nil) {
+            // 2
+            imageFile?.getDataInBackgroundWithBlock { (data: NSData?, error: NSError?) -> Void in
+                if let data = data {
+                    let image = UIImage(data: data, scale:1.0)!
+                    // 3
+                    self.image.value = image
+                }
+            }
+        }
     }
     
 }
