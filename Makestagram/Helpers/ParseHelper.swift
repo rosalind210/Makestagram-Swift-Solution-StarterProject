@@ -88,3 +88,11 @@ class ParseHelper {
     }
     
 }
+
+extension PFObject : Equatable {
+    
+}
+
+public func ==(lhs: PFObject, rhs: PFObject) -> Bool {
+    return lhs.objectId == rhs.objectId
+}
