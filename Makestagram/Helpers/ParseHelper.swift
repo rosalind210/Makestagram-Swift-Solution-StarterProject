@@ -35,7 +35,7 @@ class ParseHelper {
     static let ParseUserUsername      = "username"
     
 
-    static func timelineRequestforCurrentUser(completionBlock: PFArrayResultBlock) {
+    static func timelineRequestforCurrentUser(range: Range<Int>, completionBlock: PFArrayResultBlock) {
         let followingQuery = PFQuery(className: ParseFollowClass)
         followingQuery.whereKey(ParseLikeFromUser, equalTo:PFUser.currentUser()!)
         
@@ -49,7 +49,13 @@ class ParseHelper {
         query.includeKey(ParsePostUser)
         query.orderByDescending(ParsePostCreatedAt)
         
+        // 2
+        query.skip = range.startIndex
+        // 3
+        query.limit = range.endIndex - range.startIndex
+        
         query.findObjectsInBackgroundWithBlock(completionBlock)
+
     }
     
     //MARK: Likes

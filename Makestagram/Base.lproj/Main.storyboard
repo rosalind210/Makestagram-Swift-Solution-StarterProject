@@ -145,6 +145,7 @@
                                 </prototypes>
                                 <connections>
                                     <outlet property="dataSource" destination="T2I-Zv-jOB" id="cJK-UM-log"/>
+                                    <outlet property="delegate" destination="T2I-Zv-jOB" id="lC7-U9-qtx"/>
                                 </connections>
                             </tableView>
                         </subviews>
