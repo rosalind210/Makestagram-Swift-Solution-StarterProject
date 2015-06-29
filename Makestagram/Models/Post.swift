@@ -14,7 +14,7 @@ import Bond
 class Post : PFObject, PFSubclassing {
     
     var image: Dynamic<UIImage?> = Dynamic(nil)
-    
+    var likes =  Dynamic<[PFUser]?>(nil)
     var photoUploadTask: UIBackgroundTaskIdentifier?
     
     // 2
@@ -77,4 +77,38 @@ class Post : PFObject, PFSubclassing {
         }
     }
     
+    func fetchLikes() {
+        if likes.value != nil {
+            return
+        }
+        
+        ParseHelper.likesForPost(self, completionBlock: { (var likes: [AnyObject]?, error: NSError?) -> Void in
+            likes = likes?.filter { like in like[ParseHelper.ParseLikeFromUser] != nil }
+            
+            self.likes.value = likes?.map { like in
+                let like = like as! PFObject
+                let fromUser = like[ParseHelper.ParseLikeFromUser] as! PFUser
+                
+                return fromUser
+            }
+        })
+    }
+ 
+    func doesUserLikePost(user: PFUser) -> Bool {
+        if let likes = likes.value {
+            return contains(likes, user)
+        } else {
+            return false
+        }
+    }
+    
+    func toggleLikePost(user: PFUser) {
+        if (doesUserLikePost(user)) { //unlikes the post
+            likes.value = likes.value?.filter { $0 != user }
+            ParseHelper.unlikePost(user, post: self)
+        } else { // likes post
+            likes.value?.append(user)
+            ParseHelper.likePost(user, post: self)
+        }
+    }
 }

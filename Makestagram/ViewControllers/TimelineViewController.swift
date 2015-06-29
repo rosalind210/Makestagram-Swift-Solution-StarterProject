@@ -64,14 +64,20 @@ extension TimelineViewController: UITabBarControllerDelegate {
 
 extension TimelineViewController: UITableViewDataSource {
     
+    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        // 1 has as many rows as posts
+        return posts.count
+    }
+    
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCellWithIdentifier("PostCell") as! PostTableViewCell
         
         let post = posts[indexPath.row]
-        // 1
         post.downloadImage()
-        // 2
+        post.fetchLikes()
         cell.post = post
         
         return cell
+    }
+    
 }
