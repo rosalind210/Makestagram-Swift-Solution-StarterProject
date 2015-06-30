@@ -249,7 +249,7 @@
         <!--Tab Bar Controller-->
         <scene sceneID="bJ7-jZ-sp6">
             <objects>
-                <tabBarController id="7IW-N0-kvm" sceneMemberID="viewController">
+                <tabBarController storyboardIdentifier="TabBarController" id="7IW-N0-kvm" sceneMemberID="viewController">
                     <nil key="simulatedBottomBarMetrics"/>
                     <tabBar key="tabBar" contentMode="scaleToFill" id="pro-ZN-I0I">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="49"/>

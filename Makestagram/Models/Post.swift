@@ -9,6 +9,8 @@
 import Foundation
 import Parse
 import Bond
+import ConvenienceKit
+
 
 // 1
 class Post : PFObject, PFSubclassing {
@@ -16,6 +18,8 @@ class Post : PFObject, PFSubclassing {
     var image: Dynamic<UIImage?> = Dynamic(nil)
     var likes =  Dynamic<[PFUser]?>(nil)
     var photoUploadTask: UIBackgroundTaskIdentifier?
+    
+    static var imageCache: NSCacheSwift<String, UIImage>!
     
     // 2
     @NSManaged var imageFile: PFFile?
@@ -39,6 +43,7 @@ class Post : PFObject, PFSubclassing {
         dispatch_once(&onceToken) {
             // inform Parse about this subclass
             self.registerSubclass()
+            Post.imageCache = NSCacheSwift<String, UIImage>()
         }
     }
     
@@ -63,18 +68,22 @@ class Post : PFObject, PFSubclassing {
     }
     
     func downloadImage() {
-        // if image is not downloaded yet, get it
         // 1
+        image.value = Post.imageCache[self.imageFile!.name]
+        
+        // if image is not downloaded yet, get it
         if (image.value == nil) {
-            // 2
+            
             imageFile?.getDataInBackgroundWithBlock { (data: NSData?, error: NSError?) -> Void in
                 if let data = data {
                     let image = UIImage(data: data, scale:1.0)!
-                    // 3
                     self.image.value = image
+                    // 2
+                    Post.imageCache[self.imageFile!.name] = image
                 }
             }
         }
+
     }
     
     func fetchLikes() {
