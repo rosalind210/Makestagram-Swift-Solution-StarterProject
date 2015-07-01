@@ -17,9 +17,11 @@ class PostSectionHeaderView: UITableViewCell {
 
     var post: Post? {
         didSet {
-            //makes label username of user
             if let post = post {
+                //makes label username of user
                 usernameLabel.text = post.user?.username
+                //sets time
+                postTimeLabel.text = post.createdAt?.shortTimeAgoSinceDate(NSDate()) ?? ""
             }
         }
     }
